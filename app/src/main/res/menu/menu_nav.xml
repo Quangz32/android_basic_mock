@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/menu_item_list"
+        android:title="list"
+        app:showAsAction="always"
+
+        android:icon="@drawable/baseline_list_24"
+    />
+
+    <item
+        android:id="@+id/menu_item_grid"
+        android:title="grid"
+        app:showAsAction="always"
+        android:visible="false"
+        android:icon="@drawable/baseline_grid_view_24"
+        />
+    <item
+    android:id="@+id/menu_item_search"
+    android:title="search"
+    app:showAsAction="always"
+        android:visible="false"
+    android:icon="@drawable/baseline_search_24"
+    />
+
+    <item
+        android:id="@+id/menu_item_movies"
+        android:title="Movies" />
+    <item
+        android:id="@+id/menu_item_favourite"
+        android:title="Favourite" />
+
+    <item
+        android:id="@+id/menu_item_settings"
+        android:title="Settings" />
+    <item
+        android:id="@+id/menu_item_about"
+        android:title="About" />
+</menu>
