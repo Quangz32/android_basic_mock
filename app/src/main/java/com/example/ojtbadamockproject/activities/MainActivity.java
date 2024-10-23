@@ -1,5 +1,6 @@
 package com.example.ojtbadamockproject.activities;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,6 +22,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.ojtbadamockproject.R;
 import com.example.ojtbadamockproject.adapters.MyPagerAdapter;
+import com.example.ojtbadamockproject.database.FavouriteMovieDBHelper;
 import com.example.ojtbadamockproject.dto.MovieListResponse;
 import com.example.ojtbadamockproject.entities.Movie;
 import com.example.ojtbadamockproject.fragments.AboutFragment;
@@ -32,6 +34,7 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -45,6 +48,9 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String API_BASE_URL = "https://api.themoviedb.org/3/";
     private static final String API_KEY = "e7631ffcb8e766993e5ec0c1f4245f93";
+
+    private FavouriteMovieDBHelper dbHelper;
+
 
     ViewPager2 viewPager2;
     TabLayout tabLayout;
@@ -62,13 +68,19 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-//        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.drawer_layout), (v, insets) -> {
-//            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-//            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom); //??
-//            return insets;
-//        });
 
+
+
+
+
+
+        dbHelper = new FavouriteMovieDBHelper(this);
         getMovieData();
+
+
+
+
+
 //        setupPages();
 //        setupDrawer();    ---> these moved to Retrofit call back because of async
 
@@ -161,11 +173,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<MovieListResponse> call, Response<MovieListResponse> response) {
                 movieList = (ArrayList<Movie>) response.body().getResults();
-                for (Movie movie : movieList) {
-                    Log.d("qz_", "onResponse: " + movie.getTitle());
-                }
                 setupPages();
                 setupDrawer();
+
+                dbHelper.getAllMovies().forEach(movie -> Log.d("qz_movie", movie.toString()));
             }
 
             @Override

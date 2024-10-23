@@ -1,20 +1,25 @@
 package com.example.ojtbadamockproject.adapters;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.ojtbadamockproject.R;
+import com.example.ojtbadamockproject.database.FavouriteMovieDBHelper;
 import com.example.ojtbadamockproject.entities.Movie;
 import com.squareup.picasso.Picasso;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Set;
 
 public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.ViewHolder> {
 
@@ -22,10 +27,14 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.View
 
     private Context context;
     private ArrayList<Movie> movieList;
+    private Set<Integer> favouriteMovieIds;
 
-    public MovieListAdapter(Context context, ArrayList<Movie> movieList) {
+    public MovieListAdapter(Context context, ArrayList<Movie> movieList, Set<Integer> favouriteMovieIds) {
         this.context = context;
         this.movieList = movieList;
+        this.favouriteMovieIds = favouriteMovieIds;
+
+//        favouriteMovieIds.forEach(id -> Log.d("qz_id", String.valueOf(id)));
     }
 
     @NonNull
@@ -38,6 +47,8 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.View
     @Override
     public void onBindViewHolder(@NonNull MovieListAdapter.ViewHolder holder, int position) {
         holder.bind(movieList.get(position));
+
+
     }
 
 
@@ -46,6 +57,7 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.View
         return movieList.size();
     }
 
+
     public class ViewHolder extends RecyclerView.ViewHolder {
         //Views...
         TextView tvMovieName;
@@ -53,6 +65,9 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.View
         TextView tvReleaseDate;
         TextView tvRating;
         TextView tvOverview;
+        ImageView iv18plus;
+
+        ImageView ivStarFilled, ivStarBorder;
 
 
         public ViewHolder(@NonNull View itemView) {
@@ -62,21 +77,59 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.View
             tvReleaseDate = itemView.findViewById(R.id.movie_release_date);
             tvRating = itemView.findViewById(R.id.movie_rating);
             tvOverview = itemView.findViewById(R.id.movie_overview);
+            iv18plus = itemView.findViewById(R.id.movie_18_plus);
+
+            ivStarFilled = itemView.findViewById(R.id.favourite_star_filled);
+            ivStarBorder = itemView.findViewById(R.id.favourite_star_border);
         }
 
         public void bind(Movie movie) {
             tvMovieName.setText(movie.getTitle());
             tvReleaseDate.setText(movie.getReleaseDate());
-            tvRating.setText(String.valueOf(movie.getRating()));
+            tvRating.setText(String.valueOf(new DecimalFormat("#.0").format(movie.getRating())).concat("/10"));
             tvOverview.setText(movie.getOverview());
+
+            iv18plus.setVisibility(movie.isAdult() ? View.VISIBLE : View.GONE);
 
             Picasso.get().load(PICASSO_URL + movie.getPosterPath()).into(ivPoster);
 
-//            Picass.get()
-//                    .load(PICASSO_URL)
-//                    .placeholder(R.drawable.placeholder_img) // Ảnh placeholder khi đang load
-//                    .error(R.drawable.error_img) // Ảnh mặc định khi load lỗi
-//                    .into(ivPoster);
+            if (favouriteMovieIds != null && favouriteMovieIds.contains(movie.getId())) {
+                ivStarFilled.setVisibility(View.VISIBLE);
+                ivStarBorder.setVisibility(View.GONE);
+            } else{
+                ivStarFilled.setVisibility(View.GONE);
+                ivStarBorder.setVisibility(View.VISIBLE);
+            }
+
+            ivStarFilled.setOnClickListener(v->{
+                ivStarFilled.setVisibility(View.GONE);
+                ivStarBorder.setVisibility(View.VISIBLE);
+                Log.d("qz", "bind: ivStarFilled");
+
+                //DB handle
+                try (FavouriteMovieDBHelper dbHelper = new FavouriteMovieDBHelper(context) ){
+                    dbHelper.deleteMovie(movie.getId());
+                    Toast.makeText(context, "Movie " + movie.getId() + " deleted", Toast.LENGTH_SHORT).show();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            });
+
+            ivStarBorder.setOnClickListener(v->{
+                ivStarFilled.setVisibility(View.VISIBLE);
+                ivStarBorder.setVisibility(View.GONE);
+                Log.d("qz", "bind: ivStarBorder");
+
+                //DB handle
+                try (FavouriteMovieDBHelper dbHelper = new FavouriteMovieDBHelper(context)) {
+                    dbHelper.addMovie(movie);
+                    Toast.makeText(context, "Movie " + movie.getId() + " added", Toast.LENGTH_SHORT).show();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
         }
     }
 }

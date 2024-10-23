@@ -56,15 +56,15 @@
                 app:title="Movies"
                 app:titleTextColor="@color/white">
 
-<!--                <ImageView-->
-<!--                    android:id="@+id/icon_list_view_mode"-->
-<!--                    android:layout_width="wrap_content"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_gravity="end"-->
-<!--                    android:clickable="true"-->
-<!--                    android:focusable="true"-->
-<!--                    android:src="@drawable/baseline_grid_view_24"-->
-<!--                    app:tint="@color/white" />-->
+                <!--                <ImageView-->
+                <!--                    android:id="@+id/icon_list_view_mode"-->
+                <!--                    android:layout_width="wrap_content"-->
+                <!--                    android:layout_height="wrap_content"-->
+                <!--                    android:layout_gravity="end"-->
+                <!--                    android:clickable="true"-->
+                <!--                    android:focusable="true"-->
+                <!--                    android:src="@drawable/baseline_grid_view_24"-->
+                <!--                    app:tint="@color/white" />-->
 
             </androidx.appcompat.widget.Toolbar>
         </com.google.android.material.appbar.AppBarLayout>

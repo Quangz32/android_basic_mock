@@ -13,23 +13,20 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.ojtbadamockproject.R;
 import com.example.ojtbadamockproject.adapters.MovieGridAdapter;
 import com.example.ojtbadamockproject.adapters.MovieListAdapter;
+import com.example.ojtbadamockproject.database.FavouriteMovieDBHelper;
 import com.example.ojtbadamockproject.entities.Movie;
 
 import java.util.ArrayList;
+import java.util.Set;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link MoviesFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+
 public class MoviesFragment extends Fragment {
     private static final String MOVIE_LIST = "movie_list";
 
-    private ArrayList<Movie> mMovieList;
+    private ArrayList<Movie> movieList;
+    private Set<Integer> favouriteMovieIds;
 
     private RecyclerView recyclerView;
-//    private MovieListAdapter movieListAdapter;
-//    private MovieGridAdapter movieGridAdapter;
     private RecyclerView.Adapter recyclerViewAdapter;
     private boolean isListNow;
 
@@ -49,69 +46,50 @@ public class MoviesFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mMovieList = (ArrayList<Movie>) getArguments().getSerializable(MOVIE_LIST);
-            if (mMovieList == null) {
-                mMovieList = new ArrayList<>();
+            movieList = (ArrayList<Movie>) getArguments().getSerializable(MOVIE_LIST);
+            if (movieList == null) {
+                movieList = new ArrayList<>();
             }
         }
 
-//        setupRecyclerView();
+        //DB handle
+        try (FavouriteMovieDBHelper dbHelper = new FavouriteMovieDBHelper(getContext())){
+            favouriteMovieIds = dbHelper.getMovieIdsSet();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
 
         getParentFragmentManager().setFragmentResultListener(
                 "change_movies_page_mode",
                 getActivity(),
-                (requestKey, result) ->{
-            toggleRecyclerViewMode();
-        });
+                (requestKey, result) -> {
+                    toggleRecyclerViewMode();
+                });
 
     }
 
-//    private void setupRecyclerView() {
-//        recyclerView = getView().findViewById(R.id.recycler_view);
-//
-//        if (isListNow) {
-//            movieListAdapter = new MovieListAdapter(getContext(), mMovieList);
-//            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-//            recyclerView.setAdapter(movieListAdapter);
-//        }
-//
-//    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_movies, container, false);
         recyclerView = view.findViewById(R.id.recycler_view);
-
-//        if (isListNow) {
-//            Log.d("qz", mMovieList.toString());
-//            movieListAdapter = new MovieListAdapter(getContext(), mMovieList);
-//            movieGridAdapter = new MovieGridAdapter(getContext(), mMovieList);
-////            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-//            recyclerView.setAdapter(movieGridAdapter);
-//
-//            recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
-//            recyclerView.setAdapter(movieGridAdapter);
-//        }
-//
         isListNow = false;
         toggleRecyclerViewMode();
-
         return view;
-
-        // Inflate the layout for this fragment
     }
 
     public void toggleRecyclerViewMode() {
+        //NEED TO IMPROVE PERFORMANCE
         if (isListNow) {
             isListNow = false;
-            recyclerViewAdapter = new MovieGridAdapter(getContext(), mMovieList);
+            recyclerViewAdapter = new MovieGridAdapter(getContext(), movieList);
             recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
             recyclerView.setAdapter(recyclerViewAdapter);
-        }
-        else {
+        } else {
             isListNow = true;
-            recyclerViewAdapter = new MovieListAdapter(getContext(), mMovieList);
+            recyclerViewAdapter = new MovieListAdapter(getContext(), movieList, favouriteMovieIds);
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
             recyclerView.setAdapter(recyclerViewAdapter);
         }

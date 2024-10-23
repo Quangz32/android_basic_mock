@@ -3,38 +3,35 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/menu_item_list"
-        android:title="list"
-        app:showAsAction="always"
-
         android:icon="@drawable/baseline_list_24"
-    />
+        android:title="list"
+
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/menu_item_grid"
-        android:title="grid"
-        app:showAsAction="always"
-        android:visible="false"
         android:icon="@drawable/baseline_grid_view_24"
-        />
-    <item
-    android:id="@+id/menu_item_search"
-    android:title="search"
-    app:showAsAction="always"
+        android:title="grid"
         android:visible="false"
-    android:icon="@drawable/baseline_search_24"
-    />
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/menu_item_search"
+        android:icon="@drawable/baseline_search_24"
+        android:title="search"
+        android:visible="false"
+        app:showAsAction="always" />
 
     <item
-        android:id="@+id/menu_item_movies"
-        android:title="Movies" />
+        android:id="@+id/menu_item_popular"
+        android:title="Popular" />
     <item
-        android:id="@+id/menu_item_favourite"
-        android:title="Favourite" />
+        android:id="@+id/menu_item_top_rated"
+        android:title="Top Rated" />
 
     <item
-        android:id="@+id/menu_item_settings"
-        android:title="Settings" />
+        android:id="@+id/menu_item_upcoming"
+        android:title="Upcoming" />
     <item
-        android:id="@+id/menu_item_about"
-        android:title="About" />
+        android:id="@+id/menu_item_now_playing"
+        android:title="Now playing" />
 </menu>
