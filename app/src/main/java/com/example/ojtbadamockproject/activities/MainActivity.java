@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         myFragments.add(MoviesFragment.newInstance());
         myFragments.add(FavouriteFragment.newInstance());
         myFragments.add(SettingsFragment.newInstance());
-        myFragments.add(AboutFragment.newInstance("", ""));
+        myFragments.add(AboutFragment.newInstance());
 
         viewPager2 = findViewById(R.id.view_pager2);
         tabLayout = findViewById(R.id.tab_layout);
@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
                                 myFragments.set(2, SettingsFragment.newInstance());
                                 break;
                             case 3:
-                                myFragments.set(3, AboutFragment.newInstance("", ""));
+                                myFragments.set(3, AboutFragment.newInstance());
                                 break;
                             default:
                                 break;
