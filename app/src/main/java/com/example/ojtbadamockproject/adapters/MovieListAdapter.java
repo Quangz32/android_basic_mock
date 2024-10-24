@@ -28,11 +28,13 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.View
     private Context context;
     private ArrayList<Movie> movieList;
     private Set<Integer> favouriteMovieIds;
+    private boolean isAllFavourite;
 
-    public MovieListAdapter(Context context, ArrayList<Movie> movieList, Set<Integer> favouriteMovieIds) {
+    public MovieListAdapter(Context context, ArrayList<Movie> movieList, Set<Integer> favouriteMovieIds, boolean isAllFavourite) {
         this.context = context;
         this.movieList = movieList;
         this.favouriteMovieIds = favouriteMovieIds;
+        this.isAllFavourite = isAllFavourite;
 
 //        favouriteMovieIds.forEach(id -> Log.d("qz_id", String.valueOf(id)));
     }
@@ -47,7 +49,6 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.View
     @Override
     public void onBindViewHolder(@NonNull MovieListAdapter.ViewHolder holder, int position) {
         holder.bind(movieList.get(position));
-
 
     }
 
@@ -93,21 +94,20 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.View
 
             Picasso.get().load(PICASSO_URL + movie.getPosterPath()).into(ivPoster);
 
-            if (favouriteMovieIds != null && favouriteMovieIds.contains(movie.getId())) {
+            if (isAllFavourite || (favouriteMovieIds != null && favouriteMovieIds.contains(movie.getId()))) {
                 ivStarFilled.setVisibility(View.VISIBLE);
                 ivStarBorder.setVisibility(View.GONE);
-            } else{
+            } else {
                 ivStarFilled.setVisibility(View.GONE);
                 ivStarBorder.setVisibility(View.VISIBLE);
             }
 
-            ivStarFilled.setOnClickListener(v->{
+            ivStarFilled.setOnClickListener(v -> {
                 ivStarFilled.setVisibility(View.GONE);
                 ivStarBorder.setVisibility(View.VISIBLE);
-                Log.d("qz", "bind: ivStarFilled");
 
                 //DB handle
-                try (FavouriteMovieDBHelper dbHelper = new FavouriteMovieDBHelper(context) ){
+                try (FavouriteMovieDBHelper dbHelper = new FavouriteMovieDBHelper(context)) {
                     dbHelper.deleteMovie(movie.getId());
                     Toast.makeText(context, "Movie " + movie.getId() + " deleted", Toast.LENGTH_SHORT).show();
                 } catch (Exception e) {
@@ -116,10 +116,9 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.View
 
             });
 
-            ivStarBorder.setOnClickListener(v->{
+            ivStarBorder.setOnClickListener(v -> {
                 ivStarFilled.setVisibility(View.VISIBLE);
                 ivStarBorder.setVisibility(View.GONE);
-                Log.d("qz", "bind: ivStarBorder");
 
                 //DB handle
                 try (FavouriteMovieDBHelper dbHelper = new FavouriteMovieDBHelper(context)) {

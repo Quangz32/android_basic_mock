@@ -84,8 +84,7 @@
             android:src="@drawable/plus18_1"
 
             app:layout_constraintStart_toEndOf="@id/movie_rating"
-            app:layout_constraintTop_toTopOf="@id/movie_rating"
-            />
+            app:layout_constraintTop_toTopOf="@id/movie_rating" />
 
 
         <TextView

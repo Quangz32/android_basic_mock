@@ -62,11 +62,6 @@ public class MovieGridAdapter extends RecyclerView.Adapter<MovieGridAdapter.View
 
             Picasso.get().load(PICASSO_URL + movie.getPosterPath()).into(ivPoster);
 
-//            Picass.get()
-//                    .load(PICASSO_URL)
-//                    .placeholder(R.drawable.placeholder_img) // Ảnh placeholder khi đang load
-//                    .error(R.drawable.error_img) // Ảnh mặc định khi load lỗi
-//                    .into(ivPoster);
         }
     }
 }
