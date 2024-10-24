@@ -1,6 +1,8 @@
 package com.example.ojtbadamockproject.fragments;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +12,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.ojtbadamockproject.R;
 import com.example.ojtbadamockproject.adapters.MovieGridAdapter;
@@ -18,6 +21,7 @@ import com.example.ojtbadamockproject.database.FavouriteMovieDBHelper;
 import com.example.ojtbadamockproject.dto.MovieListResponse;
 import com.example.ojtbadamockproject.entities.Movie;
 import com.example.ojtbadamockproject.service.ApiService;
+import com.example.ojtbadamockproject.utils.MyConstants;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -37,7 +41,9 @@ public class MoviesFragment extends Fragment {
 
     private ArrayList<Movie> movieList;
     private Set<Integer> favouriteMovieIds;
+    private int pageNumber;
 
+    private SwipeRefreshLayout swipeRefreshLayout;
     private RecyclerView recyclerView;
     private RecyclerView.Adapter recyclerViewAdapter;
     private boolean isListNow;
@@ -64,9 +70,8 @@ public class MoviesFragment extends Fragment {
 //            }
 //        }
 
-        getMovieData();
+        movieList = new ArrayList<>();
         getFavouriteMovie();
-
 
         getParentFragmentManager().setFragmentResultListener(
                 "change_movies_page_mode",
@@ -74,7 +79,6 @@ public class MoviesFragment extends Fragment {
                 (requestKey, result) -> {
                     toggleRecyclerViewMode();
                 });
-
     }
 
 
@@ -82,28 +86,49 @@ public class MoviesFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_movies, container, false);
+        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout);
         recyclerView = view.findViewById(R.id.recycler_view);
-//        isListNow = false;
-//        toggleRecyclerViewMode();
+        recyclerViewAdapter = new MovieListAdapter(getContext(), movieList, favouriteMovieIds, false);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setAdapter(recyclerViewAdapter);
+
+        //PULL UP TO LOAD MORE
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                //PULL UP TO LOAD MORE
+                if (!recyclerView.canScrollVertically(1)) {
+                    if (MyConstants.SHOW_ACTION_TOAST) {
+                        Toast.makeText(getContext(), "Page " + (pageNumber + 1) +" loaded", Toast.LENGTH_SHORT).show();
+                    }
+                    pageNumber++;
+                    addMovie(pageNumber);
+                }
+
+            }
+        });
+
+        //PULL DOWN TO REFRESH
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            int oldSize = movieList.size();
+            movieList.clear();
+            pageNumber = 1;
+            addMovie(1);
+            refresh();
+            swipeRefreshLayout.setRefreshing(false);
+        });
+
+
+        //INIT VIEW
+        pageNumber = 1;
+        addMovie(1);        // -> load UI
         return view;
     }
 
-    public void toggleRecyclerViewMode() {
-        //NEED TO IMPROVE PERFORMANCE
-        if (isListNow) {
-            isListNow = false;
-            recyclerViewAdapter = new MovieGridAdapter(getContext(), movieList);
-            recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
-            recyclerView.setAdapter(recyclerViewAdapter);
-        } else {
-            isListNow = true;
-            recyclerViewAdapter = new MovieListAdapter(getContext(), movieList, favouriteMovieIds, false);
-            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-            recyclerView.setAdapter(recyclerViewAdapter);
-        }
-    }
 
-    private void getMovieData() {
+    private void addMovie(int page) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(API_BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
@@ -111,14 +136,14 @@ public class MoviesFragment extends Fragment {
 
         ApiService apiService = retrofit.create(ApiService.class);
 
-        Call<MovieListResponse> call = apiService.getPopularMovies(API_KEY, 1); //only 1st page
+        Call<MovieListResponse> call = apiService.getPopularMovies(API_KEY, page); //only 1st page
 
         call.enqueue(new Callback<MovieListResponse>() {
             @Override
             public void onResponse(Call<MovieListResponse> call, Response<MovieListResponse> response) {
-                movieList = (ArrayList<Movie>) response.body().getResults();
-                isListNow = false;
-                toggleRecyclerViewMode();
+                int oldSize = movieList.size();
+                movieList.addAll(response.body().getResults());
+                recyclerViewAdapter.notifyItemRangeInserted(oldSize, movieList.size() - oldSize);
             }
 
             @Override
@@ -127,6 +152,22 @@ public class MoviesFragment extends Fragment {
             }
         });
     }
+
+    public void toggleRecyclerViewMode() {
+        //NEED TO IMPROVE PERFORMANCE
+        if (isListNow) {
+            recyclerViewAdapter = new MovieGridAdapter(getContext(), movieList);
+            recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
+            recyclerView.setAdapter(recyclerViewAdapter);
+        } else {
+            recyclerViewAdapter = new MovieListAdapter(getContext(), movieList, favouriteMovieIds, false);
+            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+            recyclerView.setAdapter(recyclerViewAdapter);
+        }
+
+        isListNow = !isListNow;
+    }
+
 
     private void getFavouriteMovie() {
         try (FavouriteMovieDBHelper dbHelper = new FavouriteMovieDBHelper(getContext())) {
@@ -137,7 +178,7 @@ public class MoviesFragment extends Fragment {
     }
 
     public void refresh() {
-        getMovieData();
+//        addMovie(pageNumber); //MAYBE NOT NEED TO RELOAD Movies data
         getFavouriteMovie();
 
         recyclerViewAdapter = new MovieListAdapter(getContext(), movieList, favouriteMovieIds, false);

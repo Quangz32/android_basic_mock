@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.ojtbadamockproject.R;
 import com.example.ojtbadamockproject.database.FavouriteMovieDBHelper;
 import com.example.ojtbadamockproject.entities.Movie;
+import com.example.ojtbadamockproject.utils.MyConstants;
 import com.squareup.picasso.Picasso;
 
 import java.text.DecimalFormat;
@@ -49,7 +50,6 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.View
     @Override
     public void onBindViewHolder(@NonNull MovieListAdapter.ViewHolder holder, int position) {
         holder.bind(movieList.get(position));
-
     }
 
 
@@ -85,6 +85,7 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.View
         }
 
         public void bind(Movie movie) {
+
             tvMovieName.setText(movie.getTitle());
             tvReleaseDate.setText(movie.getReleaseDate());
             tvRating.setText(String.valueOf(new DecimalFormat("#.0").format(movie.getRating())).concat("/10"));
@@ -109,7 +110,9 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.View
                 //DB handle
                 try (FavouriteMovieDBHelper dbHelper = new FavouriteMovieDBHelper(context)) {
                     dbHelper.deleteMovie(movie.getId());
-                    Toast.makeText(context, "Movie " + movie.getId() + " deleted", Toast.LENGTH_SHORT).show();
+                    if (MyConstants.SHOW_ACTION_TOAST) {
+                        Toast.makeText(context, "Movie " + movie.getId() + " deleted", Toast.LENGTH_SHORT).show();
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -123,8 +126,9 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.View
                 //DB handle
                 try (FavouriteMovieDBHelper dbHelper = new FavouriteMovieDBHelper(context)) {
                     dbHelper.addMovie(movie);
-                    Toast.makeText(context, "Movie " + movie.getId() + " added", Toast.LENGTH_SHORT).show();
-
+                    if (MyConstants.SHOW_ACTION_TOAST) {
+                        Toast.makeText(context, "Movie " + movie.getId() + " added", Toast.LENGTH_SHORT).show();
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
