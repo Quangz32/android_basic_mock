@@ -7,7 +7,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -25,7 +24,6 @@ import com.example.ojtbadamockproject.fragments.AboutFragment;
 import com.example.ojtbadamockproject.fragments.FavouriteFragment;
 import com.example.ojtbadamockproject.fragments.MoviesFragment;
 import com.example.ojtbadamockproject.fragments.SettingsFragment;
-import com.example.ojtbadamockproject.utils.MyConstants;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -48,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-
 
         setupPages();
         setupDrawer();
@@ -76,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
         myFragments = new ArrayList<>();
         myFragments.add(MoviesFragment.newInstance());
         myFragments.add(FavouriteFragment.newInstance());
-        myFragments.add(SettingsFragment.newInstance("", ""));
+        myFragments.add(SettingsFragment.newInstance());
         myFragments.add(AboutFragment.newInstance("", ""));
 
         viewPager2 = findViewById(R.id.view_pager2);
@@ -84,9 +81,6 @@ public class MainActivity extends AppCompatActivity {
         pagerAdapter =
                 new MyPagerAdapter(this, myFragments);
         viewPager2.setAdapter(pagerAdapter);
-
-
-
 
 
         //Set up TabLayout
@@ -126,14 +120,14 @@ public class MainActivity extends AppCompatActivity {
                         switch (tab.getPosition()) {
                             case 0:
                                 MoviesFragment fragment0 = (MoviesFragment) myFragments.get(0);
-                                fragment0.refresh();
+                                fragment0.refresh(false);   //Không muốn load lại movieList
                                 break;
                             case 1:
                                 FavouriteFragment fragment1 = (FavouriteFragment) myFragments.get(1);
                                 fragment1.refresh();
                                 break;
                             case 2:
-                                myFragments.set(2, SettingsFragment.newInstance("", ""));
+                                myFragments.set(2, SettingsFragment.newInstance());
                                 break;
                             case 3:
                                 myFragments.set(3, AboutFragment.newInstance("", ""));
@@ -145,6 +139,10 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onTabUnselected(TabLayout.Tab tab) {
+                        if (tab.getPosition() == 2) {
+                            MoviesFragment fragment0 = (MoviesFragment) myFragments.get(0);
+                            fragment0.refresh(true);
+                        }
 
                     }
 
@@ -172,9 +170,6 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-//                if (MyConstants.SHOW_ACTION_TOAST){
-//                    Toast.makeText(MainActivity.this, "Query: " + newText, Toast.LENGTH_SHORT).show();
-//                }
 
                 FavouriteFragment ff = (FavouriteFragment) myFragments.get(1);
                 ff.doSearch(newText);

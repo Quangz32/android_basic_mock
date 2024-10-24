@@ -1,7 +1,6 @@
 package com.example.ojtbadamockproject.adapters;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -88,7 +87,7 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.View
 
             tvMovieName.setText(movie.getTitle());
             tvReleaseDate.setText(movie.getReleaseDate());
-            tvRating.setText(String.valueOf(new DecimalFormat("#.0").format(movie.getRating())).concat("/10"));
+            tvRating.setText(new DecimalFormat("#.0").format(movie.getRating()).concat("/10"));
             tvOverview.setText(movie.getOverview());
 
             iv18plus.setVisibility(movie.isAdult() ? View.VISIBLE : View.GONE);

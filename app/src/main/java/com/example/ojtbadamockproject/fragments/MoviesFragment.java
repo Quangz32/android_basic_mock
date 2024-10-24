@@ -1,8 +1,9 @@
 package com.example.ojtbadamockproject.fragments;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +25,7 @@ import com.example.ojtbadamockproject.service.ApiService;
 import com.example.ojtbadamockproject.utils.MyConstants;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Set;
 
 import retrofit2.Call;
@@ -48,6 +50,13 @@ public class MoviesFragment extends Fragment {
     private RecyclerView.Adapter recyclerViewAdapter;
     private boolean isListNow;
 
+    private SharedPreferences sharedPreferences;
+    private String settingCategory;
+    private int settingRating;
+    private String settingReleaseYear;
+    private String settingSort;
+
+
     public MoviesFragment() {
         // Required empty public constructor
     }
@@ -67,6 +76,10 @@ public class MoviesFragment extends Fragment {
         isListNow = true;
         movieList = new ArrayList<>();
         getFavouriteMovie();
+
+        sharedPreferences = getActivity().getSharedPreferences("settings", Context.MODE_PRIVATE);
+
+        getSettings();
 
         getParentFragmentManager().setFragmentResultListener(
                 "change_movies_page_mode",
@@ -96,7 +109,7 @@ public class MoviesFragment extends Fragment {
                 //PULL UP TO LOAD MORE
                 if (!recyclerView.canScrollVertically(1)) {
                     if (MyConstants.SHOW_ACTION_TOAST) {
-                        Toast.makeText(getContext(), "Page " + (pageNumber + 1) +" loaded", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Page " + (pageNumber + 1) + " loaded", Toast.LENGTH_SHORT).show();
                     }
                     pageNumber++;
                     addMovie(pageNumber);
@@ -107,11 +120,7 @@ public class MoviesFragment extends Fragment {
 
         //PULL DOWN TO REFRESH
         swipeRefreshLayout.setOnRefreshListener(() -> {
-            int oldSize = movieList.size();
-            movieList.clear();
-            pageNumber = 1;
-            addMovie(1);
-            refresh();
+            refresh(true);
             swipeRefreshLayout.setRefreshing(false);
         });
 
@@ -131,13 +140,53 @@ public class MoviesFragment extends Fragment {
 
         ApiService apiService = retrofit.create(ApiService.class);
 
-        Call<MovieListResponse> call = apiService.getPopularMovies(API_KEY, page); //only 1st page
+        Call<MovieListResponse> call;
+        switch (settingCategory) {
+            case "Popular Movies":
+                call = apiService.getPopularMovies(API_KEY, page);
+                break;
+            case "Top Rated Movies":
+                call = apiService.getTopRatedMovies(API_KEY, page);
+                break;
+            case "Upcoming Movies":
+                call = apiService.getUpcomingMovies(API_KEY, page);
+                break;
+            case "Now Playing Movies":
+                call = apiService.getNowPlayingMovies(API_KEY, page);
+                break;
+            default:
+                call = apiService.getPopularMovies(API_KEY, page);
+                break;
+        }
 
         call.enqueue(new Callback<MovieListResponse>() {
             @Override
             public void onResponse(Call<MovieListResponse> call, Response<MovieListResponse> response) {
                 int oldSize = movieList.size();
-                movieList.addAll(response.body().getResults());
+
+                //Get  movie satisfy condition
+                ArrayList<Movie> newMovies = new ArrayList<>();
+
+                for (Movie movie : response.body().getResults()) {
+                    if (movie.getRating() < settingRating) {
+                        continue;
+                    }
+                    if (Integer.parseInt(movie.getReleaseDate().substring(0, 4)) < Integer.parseInt(settingReleaseYear)) {
+                        continue;
+                    }
+                    newMovies.add(movie);
+                }
+
+                //SORT NEW MOVIEWS
+                if (settingSort.equals("Release Date")) {
+                    newMovies.sort((o1, o2) -> o2.getReleaseDate().compareTo(o1.getReleaseDate()));
+                } else if (settingSort.equals("Rating")) {
+                    newMovies.sort(Comparator.comparing(Movie::getRating).reversed());
+                }
+
+                //ADD NEW MOVIES TO LIST
+                movieList.addAll(newMovies);
+
                 recyclerViewAdapter.notifyItemRangeInserted(oldSize, movieList.size() - oldSize);
             }
 
@@ -172,14 +221,26 @@ public class MoviesFragment extends Fragment {
         }
     }
 
-    public void refresh() {
-//        addMovie(pageNumber); //MAYBE NOT NEED TO RELOAD Movies data
+    public void refresh(boolean reloadMovieList) {
         getFavouriteMovie();
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerViewAdapter = new MovieListAdapter(getContext(), movieList, favouriteMovieIds, false);
-        recyclerView.setAdapter(recyclerViewAdapter);
+        if (reloadMovieList) {
+            getSettings();
+            movieList.clear();
+            pageNumber = 1;
+            addMovie(1);
+        }
 
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerViewAdapter.notifyDataSetChanged();
+
+    }
+
+    public void getSettings() {
+        settingCategory = sharedPreferences.getString("category", "Popular Movies");
+        settingRating = sharedPreferences.getInt("rating", 0);
+        settingReleaseYear = sharedPreferences.getString("releaseYear", "");
+        settingSort = sharedPreferences.getString("sort", "Release Date");
     }
 
 
