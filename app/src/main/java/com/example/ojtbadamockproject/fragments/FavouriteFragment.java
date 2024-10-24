@@ -1,6 +1,7 @@
 package com.example.ojtbadamockproject.fragments;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -61,14 +62,30 @@ public class FavouriteFragment extends Fragment {
 
     public void refresh() {
         try (FavouriteMovieDBHelper dbHelper = new FavouriteMovieDBHelper(getContext())) {
-            favouriteMovies.clear(); // Xóa dữ liệu hiện tại
-            favouriteMovies.addAll(dbHelper.getAllMovies()); // Cập nhật dữ liệu mới từ cơ sở dữ liệu
 
             if (recyclerViewAdapter != null) {
-                recyclerViewAdapter.notifyDataSetChanged(); // Thông báo cho adapter về sự thay đổi dữ liệu
+                recyclerViewAdapter.notifyItemRangeRemoved(0, favouriteMovies.size()); // Xóa các item cũ
+                favouriteMovies.clear(); // Xóa dữ liệu hiện tại
+                favouriteMovies.addAll(dbHelper.getAllMovies()); // Cập nhật dữ liệu mới từ cơ sở dữ liệu
+                recyclerViewAdapter.notifyItemRangeInserted(0, favouriteMovies.size()); // Thông báo cho adapter về sự thay đổi dữ liệu
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void doSearch(String text) {
+        try (FavouriteMovieDBHelper dbHelper = new FavouriteMovieDBHelper(getContext())) {
+            if (recyclerViewAdapter != null) {
+                recyclerViewAdapter.notifyItemRangeRemoved(0, favouriteMovies.size());
+                favouriteMovies.clear();
+                favouriteMovies.addAll(dbHelper.searchByKeyword(text));
+                recyclerViewAdapter.notifyItemRangeInserted(0, favouriteMovies.size());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
     }
 }

@@ -7,11 +7,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
@@ -19,11 +21,11 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.ojtbadamockproject.R;
 import com.example.ojtbadamockproject.adapters.MyPagerAdapter;
-import com.example.ojtbadamockproject.database.FavouriteMovieDBHelper;
 import com.example.ojtbadamockproject.fragments.AboutFragment;
 import com.example.ojtbadamockproject.fragments.FavouriteFragment;
 import com.example.ojtbadamockproject.fragments.MoviesFragment;
 import com.example.ojtbadamockproject.fragments.SettingsFragment;
+import com.example.ojtbadamockproject.utils.MyConstants;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -83,6 +85,10 @@ public class MainActivity extends AppCompatActivity {
                 new MyPagerAdapter(this, myFragments);
         viewPager2.setAdapter(pagerAdapter);
 
+
+
+
+
         //Set up TabLayout
         new TabLayoutMediator(tabLayout, viewPager2, (tab, position) -> {
             String[] tabs = {"Movies", "Favourite", "Settings", "About"};
@@ -135,7 +141,6 @@ public class MainActivity extends AppCompatActivity {
                             default:
                                 break;
                         }
-
                     }
 
                     @Override
@@ -155,14 +160,35 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_nav, menu);
-        return true;
 
+        MenuItem searchItem = menu.findItem(R.id.menu_item_search);
+        SearchView searchView = (SearchView) searchItem.getActionView();
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+//                if (MyConstants.SHOW_ACTION_TOAST){
+//                    Toast.makeText(MainActivity.this, "Query: " + newText, Toast.LENGTH_SHORT).show();
+//                }
+
+                FavouriteFragment ff = (FavouriteFragment) myFragments.get(1);
+                ff.doSearch(newText);
+                return false;
+            }
+        });
+        return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
         int itemId = item.getItemId();
+
         if (itemId == R.id.menu_item_list || itemId == R.id.menu_item_grid) {
             getSupportFragmentManager().setFragmentResult("change_movies_page_mode", null);
 

@@ -121,27 +121,35 @@ public class FavouriteMovieDBHelper extends SQLiteOpenHelper {
         return movieIds;
     }
 
+    public List<Movie> searchByKeyword(String keyword) {
+        List<Movie> searchResults = new ArrayList<>();
 
-    // Add other CRUD methods like updateMovie, deleteMovie based on your requirements
+        String selectQuery = "SELECT * FROM " + TABLE_MOVIES +
+                " WHERE " + KEY_TITLE + " LIKE '%" + keyword + "%' OR " +
+                KEY_OVERVIEW + " LIKE '%" + keyword + "%'";
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                Movie movie = new Movie();
+                movie.setId(cursor.getInt(0));
+                movie.setTitle(cursor.getString(1));
+                movie.setAdult(cursor.getInt(2) == 1);
+                movie.setPosterPath(cursor.getString(3));
+                movie.setReleaseDate(cursor.getString(4));
+                movie.setOverview(cursor.getString(5));
+                movie.setRating(cursor.getFloat(6));
+
+                searchResults.add(movie);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+
+        return searchResults;
+    }
+
 }
-
-//public Set<Integer> getMovieIdsSet() {
-//    Set<Integer> movieIds = new HashSet<>();
-//    String selectQuery = "SELECT " + MovieContract.MovieEntry._ID + " FROM " + MovieContract.MovieEntry.TABLE_NAME;
-//    SQLiteDatabase db = this.getReadableDatabase();
-//    Cursor cursor = db.rawQuery(selectQuery, null);
-//
-//    if (cursor.moveToFirst()) {
-//        do {
-//            int idColumnIndex = cursor.getColumnIndex(MovieContract.MovieEntry._ID);
-//            if (idColumnIndex >=0){
-//                int movieId = cursor.getInt(idColumnIndex);
-//                movieIds.add(movieId);
-//            }
-//        } while (cursor.moveToNext());
-//    }
-//
-//    cursor.close();
-//    db.close();
-//    return movieIds;
-//}

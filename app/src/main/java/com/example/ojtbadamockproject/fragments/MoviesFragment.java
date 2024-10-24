@@ -63,13 +63,8 @@ public class MoviesFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        if (getArguments() != null) {
-//            movieList = (ArrayList<Movie>) getArguments().getSerializable(MOVIE_LIST);
-//            if (movieList == null) {
-//                movieList = new ArrayList<>();
-//            }
-//        }
 
+        isListNow = true;
         movieList = new ArrayList<>();
         getFavouriteMovie();
 
@@ -181,6 +176,7 @@ public class MoviesFragment extends Fragment {
 //        addMovie(pageNumber); //MAYBE NOT NEED TO RELOAD Movies data
         getFavouriteMovie();
 
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerViewAdapter = new MovieListAdapter(getContext(), movieList, favouriteMovieIds, false);
         recyclerView.setAdapter(recyclerViewAdapter);
 
